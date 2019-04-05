@@ -33,8 +33,6 @@ http:ServiceEndpointConfiguration httpEndpointConfiguration = {
 listener http:Listener httpInboundEP = new(9090, config = httpEndpointConfiguration);
 
 
-
-
 //Book API Service
 @http:ServiceConfig {
     basePath:"/books"
@@ -45,6 +43,8 @@ service BookAPI on httpInboundEP{
         path: "/book/{id}"        
     }
     resource function getBook(http:Caller caller, http:Request request, string id ) {
+
+
         string searchQueryByBookID = "SELECT Book_Number__c,Id,Name,Status__c,Book_Name_in_English__c,Book_Title__c FROM Book__c WHERE Name ='"+ id +"'";
         var response = salesforceClient->getQueryResult(searchQueryByBookID);
         if (response is json) {
@@ -65,6 +65,38 @@ service BookAPI on httpInboundEP{
 
 
 
+//Lending API Service
+@http:ServiceConfig {
+    basePath:"/lending"
+}
+service LendingAPI on httpInboundEP{
+    
+    @http:ResourceConfig {
+        methods: ["GET"],
+        path: "/search/{bookid}"
+    }
+    resource function searchLeadingByBook(http:Caller caller, http:Request request, string bookid) {
+        string searchQueryByBookID = "SELECT Book_Number_Name__c,Book__c,Due_Days__c,Id,Issue_Date__c,Lender_Name__c,Lender__c,Name,Return_Date__c,Status__c FROM Lending__c WHERE Book__c IN (SELECT Id FROM Book__c WHERE Name ='"+ bookid +"')";
+        var response = salesforceClient->getQueryResult(searchQueryByBookID);
+        
+        
+        if (response is json) {
+            io:println("TotalSize:  ", response["totalSize"]);
+            io:println("Done:  ", response["done"]);
+            io:println("Records: ", response["records"]);
+            io:println("Message: ", response.message);
+
+            var result = caller->respond(response);
+            if (result is error) {
+            log:printError("Error sending response", err = result);
+        }
+        } else {
+            io:println("Error: ", response.message);
+        }        
+    }
+
+
+}
 
 
 
