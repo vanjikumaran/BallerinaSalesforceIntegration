@@ -76,7 +76,7 @@ service LendingAPI on httpInboundEP{
         path: "/search/{bookid}"
     }
     resource function searchLeadingByBook(http:Caller caller, http:Request request, string bookid) {
-        string searchQueryByBookID = "SELECT Book_Number_Name__c,Book__c,Due_Days__c,Id,Issue_Date__c,Lender_Name__c,Lender__c,Name,Return_Date__c,Status__c FROM Lending__c WHERE Book__c IN (SELECT Id FROM Book__c WHERE Name ='"+ bookid +"')";
+        string searchQueryByBookID = "SELECT Book_Number_Name__c,Book__c,Due_Days__c,Id,Issue_Date__c,Lender_Name__c,Lender__c,Name,Return_Date__c,Status__c FROM Lending__c WHERE Book__c IN (SELECT Id FROM Book__c WHERE Name ='"+ bookid +"') AND Status__c !='Returned'";
         var response = salesforceClient->getQueryResult(searchQueryByBookID);
         
         
