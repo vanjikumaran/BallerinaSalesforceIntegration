@@ -2,7 +2,7 @@ import wso2/sfdc37 as sf;
 import ballerina/http;
 import ballerina/io;
 import ballerina/config;
-
+import ballerina/log;
 
 sf:SalesforceConfiguration salesforceConfig = {
         baseUrl: config:getAsString("SF_URL"),
@@ -52,10 +52,14 @@ service BookAPI on httpInboundEP{
             io:println("Done:  ", response["done"]);
             io:println("Records: ", response["records"]);
             io:println("Message: ", response.message);
+
+            var result = caller->respond(response);
+            if (result is error) {
+            log:printError("Error sending response", err = result);
+        }
         } else {
             io:println("Error: ", response.message);
-        }  
-        
+        }        
     }
 }
 
